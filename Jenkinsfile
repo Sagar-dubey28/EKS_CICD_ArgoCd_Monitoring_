@@ -54,26 +54,26 @@ pipeline {
             steps {
                 withCredentials([
                     [$class: 'AmazonWebServicesCredentialsBinding',
-                      credentialsId: 'aws-jenkins',
-                      accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-                      secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'],
+                    credentialsId: 'aws-jenkins',
+                    accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                    secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'],
                     gitUsernamePassword(credentialsId: 'github-https', gitToolName: 'Default')
                 ]) {
                     sh '''
-                      export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-                      export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-                      export AWS_DEFAULT_REGION=${AWS_REGION}
+                    export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+                    export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+                    export AWS_DEFAULT_REGION=${AWS_REGION}
 
-                      ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-                      IMAGE="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${IMAGE_TAG}"
-                      
-                      sed -i "s|image: .*|image: ${IMAGE}|" k8s/deployment.yaml
-                      
-                      git config user.email "jenkins@local"
-                      git config user.name "jenkins"
-                      git add k8s/deployment.yaml
-                      git commit -m "chore: deploy ${IMAGE_TAG}" || true
-                      git push origin HEAD:main
+                    ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+                    IMAGE="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${IMAGE_TAG}"
+
+                    sed -i "s|image: REPLACE_WITH_ECR_IMAGE|image: ${IMAGE}|" k8s/deployment.yaml
+
+                    git config user.email "jenkins@local"
+                    git config user.name "jenkins"
+                    git add k8s/deployment.yaml
+                    git commit -m "chore: deploy ${IMAGE_TAG}" || true
+                    git push origin HEAD:main
                     '''
                 }
             }
