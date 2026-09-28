@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: 320900771424.dkr.ecr.ap-south-1.amazonaws.com/eks-devops-demo:6-6789f0b
+          image: REPLACE_WITH_ECR_IMAGE
           ports:
             - name: http
               containerPort: 3000
