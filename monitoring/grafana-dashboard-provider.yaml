@@ -1,0 +1,10 @@
+apiVersion: 1
+providers:
+  - name: EKS DevOps
+    orgId: 1
+    folder: EKS DevOps
+    type: file
+    disableDeletion: true
+    editable: true
+    options:
+      path: /var/lib/grafana/dashboards

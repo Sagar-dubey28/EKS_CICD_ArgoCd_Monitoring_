@@ -1,0 +1,37 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: eks-devops-demo-alerts
+  namespace: devops-demo
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: eks-devops-demo
+      rules:
+        - alert: DevOpsDemoHighCPU
+          expr: |
+            (
+              sum by (namespace, pod) (
+                rate(container_cpu_usage_seconds_total{namespace="devops-demo",container="app",image!=""}[5m])
+              )
+              /
+              sum by (namespace, pod) (
+                kube_pod_container_resource_requests{namespace="devops-demo",container="app",resource="cpu",unit="core"}
+              )
+            ) > 0.80
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High CPU utilization on {{ $labels.pod }}"
+            description: "Pod CPU is above 80% of its requested CPU for 5 minutes."
+        - alert: DevOpsDemoPodCrashLooping
+          expr: |
+            max_over_time(kube_pod_container_status_waiting_reason{namespace="devops-demo",reason="CrashLoopBackOff"}[10m]) >= 1
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Pod is in CrashLoopBackOff"
+            description: "A container is repeatedly crashing."
