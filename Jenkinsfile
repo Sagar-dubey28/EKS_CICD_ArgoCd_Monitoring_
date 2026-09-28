@@ -10,7 +10,9 @@ pipeline {
             steps { checkout scm }
         }
         stage('Build') {
-            steps { dir('app') { sh 'npm ci --ignore-scripts' } }
+            steps {dir('app') { 
+            sh 'npm install' 
+        }}
         }
         stage('Test') {
             steps { dir('app') { sh 'npm test' } }
