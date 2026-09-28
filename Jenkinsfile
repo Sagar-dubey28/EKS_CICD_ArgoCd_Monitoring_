@@ -29,10 +29,19 @@ pipeline {
                   accessKeyVariable: 'AWS_ACCESS_KEY_ID',
                   secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
                     sh '''
+                      export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+                      export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+                      export AWS_DEFAULT_REGION=${AWS_REGION}
+
                       ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
                       ECR_REGISTRY=${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
-                      aws ecr describe-repositories --repository-names ${ECR_REPOSITORY} --region ${AWS_REGION} >/dev/null 2>&1 ||                         aws ecr create-repository --repository-name ${ECR_REPOSITORY} --region ${AWS_REGION}
-                      aws ecr get-login-password --region ${AWS_REGION} |                         docker login --username AWS --password-stdin ${ECR_REGISTRY}
+
+                      aws ecr describe-repositories --repository-names ${ECR_REPOSITORY} --region ${AWS_REGION} >/dev/null 2>&1 || \
+                        aws ecr create-repository --repository-name ${ECR_REPOSITORY} --region ${AWS_REGION}
+
+                      aws ecr get-login-password --region ${AWS_REGION} | \
+                        docker login --username AWS --password-stdin ${ECR_REGISTRY}
+
                       docker tag ${ECR_REPOSITORY}:${IMAGE_TAG} ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
                       docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
                     '''
